@@ -1,14 +1,40 @@
-# udacity_project4
+# Udacity_project4
 
-used an ml.t3.medium notebook with Pytorch 1.13 Python 3.9 CPU Optimized
+## Step 1: 
 
-chose the g5.2xlarge as it was on the list of approved instances that work with the Deep Learning AMI. It was one of the cheaper options providing enough cpu and memory to train the model.
+Used an ml.t3.medium notebook as from my previous experiences with similar projects this instance seemed sufficient with a low cost 
 
-Lambda function result : 
-Test event: 
+Notebook set up: 
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-19%20at%2010.51.55%20PM.png)
+
+S3 Bucket used: 
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%205.13.41%20PM.png)
+
+Deployed endpoint:
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%202.58.16%20AM.png)
+
+## Step 2: 
+I chose the g5.2xlarge as it was on the list of approved instances that work with the Deep Learning AMI, I needed the pytorch env to be able to run the `solution.py` script. It was one of the cheaper options providing enough cpu and memory (32 GiB) to train the model. I played it safe and chose a model with more specs than needed since it only cost $1.212/hr and i would only be using it for 10-20 mins.
+
+<img width="1273" alt="Screenshot 2023-03-20 at 5 27 13 PM" src="https://user-images.githubusercontent.com/22144490/226298612-39ecbb28-4eb5-4b03-a29a-0273b20be205.png">
+
+EC2 instance with `model.pth` saved to `TrainedModels` directory
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%201.21.35%20AM.png)
+
+#### EC2 Code vs Sagemaker Code:
+* Not a lot of hyperparameter tuning in the EC2 code compared to Sagemaker code
+* Deployment method is different, one generates a model.pth file and one uses an endpoint that can be accessed publicly
+
+## Step 3: 
+
+I created a lambda function using the `lambdafunction.py` script where I replaced the `endpoint_Name` variable with my previously created endpoint `pytorch-inference-2023-03-19-18-54-03-855`. The lambda function simply calls this endpoint and returns the response. I created a test event to see if my function works correctly:
+
 ```
 { "url": "https://s3.amazonaws.com/cdn-origin-etr.akc.org/wp-content/uploads/2017/11/20113314/Carolina-Dog-standing-outdoors.jpg" }
 ```
+
+Result of lambda function test:
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%204.16.41%20PM.png)
 
 ```
 Test Event Name
@@ -36,3 +62,31 @@ REPORT RequestId: 09360260-4de3-4ea2-af2e-96d067e143fa	Duration: 936.98 ms	Bille
 Request ID
 09360260-4de3-4ea2-af2e-96d067e143fa
 ```
+
+## Step 4:
+
+Lambda function setup:
+
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%204.19.47%20PM.png)
+
+#### Security policy:
+
+While my policy is not full SageMaker access, it is a little more permissive than it needs to be. I can make it secure by reducing the scope to my specific endpoint by naming the resource and specifying only read actions on the endpoint. I believe my AWS Workspace is relatively secure but constant monitoring of security policies across EC2, SageMaker, IAM roles, Lambda functions is required to make it as restrictive as possible.
+
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%204.18.59%20PM.png)
+
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%204.18.34%20PM.png)
+
+## Step 5:
+ 
+#### Concurrency:
+
+I set up a provisioned concurrency of 3 so that my Lambda function can handle that many more calls concurrently.
+
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%205.06.44%20PM.png)
+
+#### Auto-scaling
+
+I set min instance to 1 and max instance to 5 so that it can scale accordingly. I also set the scale-in/out cool down to 60 seconds so that instances can scale in/out faster and it doesnt affect the availability of the endpoint.
+
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%205.10.54%20PM.png)
