@@ -73,9 +73,7 @@ Lambda function setup:
 
 My policy has full SageMaker access, which is a lot more permissive than it needs to be. Also roles that are  old or inactive can be dangerous as people who no longer work on the project can have access to the resources and can jeopardize the project with malicious intent. Likewise, roles with policies for functions that the project is no longer using can be dangerous because users can use resources to modify other unrelated resources that might affect the success and security of the project. I can make it secure by reducing the scope to my specific endpoint by naming the resource and specifying only read actions on the endpoint. I believe my AWS Workspace is relatively secure but constant monitoring of security policies across EC2, SageMaker, IAM roles, Lambda functions is required to make it as restrictive as possible.
 
-![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%204.18.59%20PM.png)
-
-![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%204.18.34%20PM.png)
+![alt text](https://github.com/archthegit/udacity_project4/blob/main/new_screenshots/Screenshot%202023-03-20%20at%209.29.11%20PM.png)
 
 ## Step 5:
  
